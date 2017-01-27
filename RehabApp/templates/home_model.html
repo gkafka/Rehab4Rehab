@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand">Rehab4Rehab</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <br><br>
+
+    <div class="container">
+
+      <div class="starter-template">
+        <h2>Rehab4Rehab Parameter Explorer</h2>
+        <p>Enter county statistics:</p>
+      </div>
+
+      <div class = "container">
+
+        <form action="/home" method="GET">
+          <div class="form-group">
+            <label for="population">Population:</label>
+            <input type="text" id="population" name='population' placeholder="e.g. 50000">
+            <br>
+            <label for="n_facility">Number of Rehab Facilities:</label>
+            <input type="text" id="n_facility" name='n_facility' placeholder="e.g. 10">
+            <br>
+            <label for="opioidclaim">Opioid Claims:</label>
+            <input type="text" id="opioidclaim" name='opioidclaim' placeholder="e.g. 50000">
+            <br>
+            <label for="opioid_rate">Opioid Prescribing Rate:</label>
+            <input type="text" id="opioid_rate" name='opioid_rate' placeholder="e.g. 5 (percent)">
+            <br>
+            <label for="prescribers">Number of Part D Prescribers:</label>
+            <input type="text" id="prescribers" name='prescribers' placeholder="e.g. 200">
+            <br>
+            <label for="mortality">Drug Poison Mortality Rate:</label>
+            <input type="text" id="mortality" name='mortality' placeholder="e.g. 3">
+            <br>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-default btn-lg">Model the county</button>
+          </div>
+        </form>
+      </div>
+      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+      <script src="../static/js/bootstrap.min.js"></script>
+
+    </div> <!-- /.container-->
+
+    {% if filled %}
+    <div class="container">
+      <div class="starter-template">
+        <h2>Results:</h2>
+        <p class="lead">
+          The actual drug poison mortality rate is {{ paramdict['True y'] }}.<br>
+          The predicted rate is {{ paramdict['Pred y'] }}.<br>
+          {{ rec }}<br>
+          Other statistics:<br>
+          Population: {{ paramdict['Population'] }}<br>
+          Number of rehab facilities: {{ paramdict['n_facilities'] }}<br>
+          Number of opioid claims: {{ paramdict['Opioid Claims'] }}<br>
+          Percent of all claims relating to opioids: {{ paramdict['Opioid Prescribing Rate'] }}<br>
+          Number of Medicare Part D Prescribers: {{ paramdict['Part D Prescribers'] }}<br>
+      </div>
+
+    </div><!-- /.container -->
+    {% endif %}
+
+{% endblock %}
