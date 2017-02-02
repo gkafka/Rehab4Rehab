@@ -14,28 +14,11 @@ dbname = 'rehab_db'
 @app.route('/')
 @app.route('/home')
 def get_model_input():
-    db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
-    con = None
-    con = psycopg2.connect(database = dbname, user = user)
-    
-    sql_query = """
-                SELECT county, st, state FROM rehab_table GROUP BY county, st, state;
-                """
-    df = pd.read_sql_query(sql_query,con)
-    df.sort_values(by=['state', 'county'], inplace=True)
-
-    menu_entries = []
-    for i in xrange(df.shape[0]):
-        menu_entries.append("{0}, {1}".format(df.iloc[i]['st'], df.iloc[i]['county'].upper()))
-
-    return render_template("home_map.html", menu_entries=menu_entries)
-
-@app.route('/explorer')
-def explore():
     paramdict = {}
     all = True
     rec = ''
-
+    county = ''
+    state = ''
     db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
     con = None
     con = psycopg2.connect(database = dbname, user = user)
@@ -50,8 +33,6 @@ def explore():
     for i in xrange(df.shape[0]):
         menu_entries.append("{0}, {1}".format(df.iloc[i]['st'], df.iloc[i]['county'].upper()))
     
-    county = ''
-    state = ''
     temp = request.args.get('countyst')
     try:
         wordlist = temp.split(', ')
@@ -66,7 +47,7 @@ def explore():
                            part_d_prescribers, population,
                            death_rate_category_median, pred_diff
                     FROM rehab_table
-                    WHERE county='{0}' AND st='{1}';
+                    WHERE county='{0}' AND st='{1}' AND year=2014;
                     """.format(county, state)
         df = pd.read_sql_query(sql_query,con)
         if df.shape[0] > 0:
@@ -132,7 +113,7 @@ def explore():
             paramdict['True y'] = y
             paramdict['Pred y'] = pred
 
-    return render_template("explorer.html",
+    return render_template("home_map.html",
         menu_entries=menu_entries,
         county=county, state=state,
         paramdict=paramdict, rec=rec, filled=all)
