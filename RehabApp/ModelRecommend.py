@@ -4,7 +4,7 @@ from sklearn.externals import joblib
 
 def ModelRecommend(paramdict, y):
     rf = joblib.load('RehabApp/static/model_rf.pkl')
-    ss = joblib.load('RehabApp/static/scale.pkl')
+    #ss = joblib.load('RehabApp/static/scale.pkl')
 
     df = pd.DataFrame([paramdict])
     #ss.transform(df)

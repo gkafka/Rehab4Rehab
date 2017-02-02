@@ -1,9 +1,6 @@
 from ModelRecommend import ModelRecommend
 from RehabApp import app
-import StringIO
 from flask import render_template, request, send_file
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import psycopg2
@@ -22,12 +19,49 @@ from bokeh.plotting import figure, output_notebook, show
 
 from bokeh.sampledata.us_counties import data as countydata
 
+user = 'gkafka'
+host = 'localhost'
+dbname = 'rehab_db'
+
 @app.route('/')
 @app.route('/home')
 def get_model_input():
-    plot, rates = map()
+    plot = map()
     script, div = embed.components(plot)
 
+    db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
+    con = None
+    con = psycopg2.connect(database = dbname, user = user)
+    
+    sql_query = """
+                SELECT county, st, state FROM rehab_table GROUP BY county, st, state;
+                """
+    df = pd.read_sql_query(sql_query,con)
+    df.sort_values(by=['state', 'county'], inplace=True)
+
+    menu_entries = []
+    for i in xrange(df.shape[0]):
+        menu_entries.append("{0}, {1}".format(df.iloc[i]['county'].upper(), df.iloc[i]['st']))
+
+    return render_template("home_map.html",
+        script=script, div=div, menu_entries=menu_entries)
+
+@app.route('/explorer')
+def explore():
+    db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
+    con = None
+    con = psycopg2.connect(database = dbname, user = user)
+    
+    sql_query = """
+                SELECT county, st, state FROM rehab_table GROUP BY county, st, state;
+                """
+    df = pd.read_sql_query(sql_query,con)
+    df.sort_values(by=['state', 'county'], inplace=True)
+
+    menu_entries = []
+    for i in xrange(df.shape[0]):
+        menu_entries.append("{0}, {1}".format(df.iloc[i]['county'].upper(), df.iloc[i]['st']))
+    
     paramdict = {}
     
     all = True
@@ -75,14 +109,14 @@ def get_model_input():
     
     rec = ''
     if all:
-        paramdict['Overall Claims'] = 100.*(paramdict['Opioid Claims'] /
-                                            paramdict['Opioid Prescribing Rate'])
+        #paramdict['Overall Claims'] = 100.*(paramdict['Opioid Claims'] /
+        #                                    paramdict['Opioid Prescribing Rate'])
         rec, pred = ModelRecommend(paramdict, y)
         paramdict['True y'] = y
         paramdict['Pred y'] = pred
 
-    return render_template("home_model.html",
-        filled=all, paramdict=paramdict, rec=rec, script=script, div=div, rates=rates)
+    return render_template("explorer.html",
+        paramdict=paramdict, rec=rec, filled=all, menu_entries=menu_entries)
 
 @app.route('/about')
 def about():
@@ -102,10 +136,6 @@ def fix_word(word):
     return new_word
 
 def map():
-    user = 'gkafka' #add your username here (same as previous postgreSQL)
-    host = 'localhost'
-    dbname = 'rehab_db'
-
     db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
     con = None
     con = psycopg2.connect(database = dbname, user = user)
@@ -162,4 +192,4 @@ def map():
         ("(Long, Lat)", "($x, $y)"),
     ]
 
-    return p, county_rates
+    return p
