@@ -37,36 +37,6 @@
           stroke: #fff;
           stroke-linejoin: round;
         }
-      
-        .track,
-        .track-inset,
-        .track-overlay {
-          stroke-linecap: round;
-        }
-      
-        .track {
-          stroke: #000;
-          stroke-opacity: 0.3;
-          stroke-width: 10px;
-        }
-      
-        .track-inset {
-          stroke: #ddd;
-          stroke-width: 8px;
-        }
-      
-        .track-overlay {
-          pointer-events: stroke;
-          stroke-width: 50px;
-          cursor: crosshair;
-        }
-      
-        .handle {
-          fill: #fff;
-          stroke: #000;
-          stroke-opacity: 0.5;
-          stroke-width: 1.25px;
-        }
       </style>
       
       <div class="container">
@@ -87,14 +57,12 @@
           var path = d3.geoPath();
 
           var x = d3.scaleLinear()
-              <!--.domain([0, 9])-->
-              .domain([0, 3])
+              .domain([-20, 20])
               .rangeRound([600, 860]);
-
+              
           var color = d3.scaleThreshold()
-              <!--.domain(d3.range(0, 9, 1))-->
-              .domain(d3.range(0, 3, 0.5))
-              .range(d3.schemeBlues[7]);
+              .domain(d3.range(-18, 22, 4))
+              .range(d3.schemeRdBu[11].reverse());
 
           var g = svg.append("g")
               .attr("class", "key")
@@ -120,7 +88,7 @@
               .attr("fill", "#000")
               .attr("text-anchor", "start")
               .attr("font-weight", "bold")
-              .text("Estimated stroke hosp. reduced (per 1000 Medicare ben.)");
+              .text("Difference between measured and predicted drug poison mortality rates");
 
           g.call(d3.axisBottom(x)
               .tickSize(13)
@@ -132,13 +100,12 @@
           function make_graph () {
               d3.queue()
                 .defer(d3.json, "https://d3js.org/us-10m.v1.json")
-                .defer(d3.csv, "/intervention_result", function(d) {
-                    strokes.set(d.fips,
+                .defer(d3.csv, "static/rehab.csv", function(d) {
+                    county_data.set(d.fips,
                       d3.map ()
-                        .set ("county", d.county)
-                        .set ("state", d.state)
-                        .set ("stroke_red", +d.stroke_red)
-                        .set ("medicare_pop", +d.medicare_pop))
+                        .set("county", d.county)
+                        .set("state", d.st)
+                        .set("diff", +d.pred_diff))
                     })
                   .await(ready);
               function ready(error, us) {
@@ -150,16 +117,16 @@
                     .data(topojson.feature(us, us.objects.counties).features)
                     .enter().append("path")
                     .attr("fill", function(d) { 
-                        if (typeof (strokes.get(d.id)) == "undefined" ||
-                            strokes.get(d.id).get("stroke_red") == "") return "#707070";
-                        else return color(d.stroke_red =
-                          strokes.get(d.id).get("stroke_red")); })
+                        if (typeof (county_data.get(d.id)) == "undefined" ||
+                            county_data.get(d.id).get("diff") == "-20") return "#ffffff";
+                        else return color(d.pred_diff =
+                          county_data.get(d.id).get("diff")); })
                     .attr("d", path)
                     .append("title")
                     .text(function(d) { 
-                              if (typeof (strokes.get(d.id)) != "undefined")
-                                return strokes.get(d.id).get("county") + " - " +
-                                  strokes.get(d.id).get("state") + "\n" + d.stroke_red;
+                              if (typeof (county_data.get(d.id)) != "undefined")
+                                return county_data.get(d.id).get("county") + ", " +
+                                  county_data.get(d.id).get("state") + "\n" + d.pred_diff;
                               else return "";})
                               
                   svg.append("path")
