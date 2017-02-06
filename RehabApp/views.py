@@ -30,6 +30,7 @@ def get_model_input():
                 GROUP BY st, state, fips_state;
                 """
     df = pd.read_sql_query(sql_query,con)
+    df.sort_values(by='state', inplace=True)
 
     states = []
     for i, row in df.iterrows ():

@@ -193,8 +193,7 @@
                   $('#state, #county').change(validate);
                 });
                 function validate(e){
-                  if ( $('#state').val().length > 1  &&  $('#county').val().length > 1 )
-                  {
+                  if ( $('#state').val() > 0  &&  $('#county').val() > 0 ) {
                     $('#submit2').prop('disabled', false);
                   } else {
                     $('#submit2').prop('disabled', true);
