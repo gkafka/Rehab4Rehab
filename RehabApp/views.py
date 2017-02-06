@@ -11,6 +11,19 @@ user = 'gkafka'
 host = 'localhost'
 dbname = 'rehab_db'
 
+def fix_county_for_display(c, st):
+    name = ' '.join(w.title() for w in c.split(' '))
+    if st == 'LA':
+        name = ' '.join([name, 'Parish'])
+    elif st == 'AK':
+        if 'Census' not in name:
+            name = ' '.join([name, 'Borough'])
+    elif st != 'DC':
+        name = ' '.join([name, 'County'])
+    else:
+        pass
+    return name
+
 @app.route('/')
 @app.route('/home')
 def get_model_input():
@@ -46,7 +59,7 @@ def get_model_input():
 
     counties = []
     for i, row in df.iterrows ():
-        counties.append([row['fips_state'], row['fips'], ' '.join(w.title() for w in row['county'].split(' '))])
+        counties.append([row['fips_state'], row['fips'], fix_county_for_display(row['county'], row['st'])])
     
     temp = request.args.get('county')
     try:
@@ -60,17 +73,17 @@ def get_model_input():
                     SELECT n_facilities, opioid_claims, opioid_prescribing_rate,
                            part_d_prescribers, population,
                            death_rate_category_median, pred_diff,
-                           county, state
+                           county, state, st
                     FROM rehab_table
                     WHERE fips='{0}' AND year=2014;
                     """.format(fips)
         df = pd.read_sql_query(sql_query,con)
         if df.shape[0] > 0:
-            county = ' '.join(w.title() for w in df['county'].values[0].split(' '))
+            county = fix_county_for_display(df['county'].values[0], df['st'].values[0])
             state = df['state'].values[0]
             paramdict['n_facilities'] = df['n_facilities'].values[0]
             paramdict['Opioid Claims'] = df['opioid_claims'].values[0]
-            paramdict['Opioid Prescribing Rate'] = df['opioid_prescribing_rate'].values[0]
+            paramdict['Opioid Prescribing Rate'] = "{0:.2f}".format(round(df['opioid_prescribing_rate'].values[0], 2))
             paramdict['Part D Prescribers'] = df['part_d_prescribers'].values[0]
             paramdict['Population'] = df['population'].values[0]
 
@@ -104,6 +117,7 @@ def get_model_input():
         temp = request.args.get('opioid_rate')
         try:
             formatted = float(temp)
+            formatted = '{0:.2f}'.format(round(formatted, 2))
             paramdict['Opioid Prescribing Rate'] = formatted
         except:
             all = False;
