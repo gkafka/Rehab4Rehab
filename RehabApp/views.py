@@ -17,6 +17,7 @@ def get_model_input():
     paramdict = {}
     all = True
     rec = ''
+    fips = ''
     county = ''
     state = ''
     db = create_engine('postgres://%s%s/%s'%(user,host,dbname))
@@ -24,34 +25,48 @@ def get_model_input():
     con = psycopg2.connect(database = dbname, user = user)
     
     sql_query = """
-                SELECT county, st, state FROM rehab_table GROUP BY county, st, state;
+                SELECT st, state, fips_state
+                FROM rehab_table
+                GROUP BY st, state, fips_state;
+                """
+    df = pd.read_sql_query(sql_query,con)
+
+    states = []
+    for i, row in df.iterrows ():
+        states.append ([row['fips_state'], row['state']])
+
+    sql_query = """
+                SELECT county, st, state, fips_state, fips
+                FROM rehab_table
+                GROUP BY county, st, state, fips_state, fips;
                 """
     df = pd.read_sql_query(sql_query,con)
     df.sort_values(by=['state', 'county'], inplace=True)
 
-    menu_entries = []
-    for i in xrange(df.shape[0]):
-        menu_entries.append("{0}, {1}".format(df.iloc[i]['st'], df.iloc[i]['county'].upper()))
+    counties = []
+    for i, row in df.iterrows ():
+        counties.append([row['fips_state'], row['fips'], ' '.join(w.title() for w in row['county'].split(' '))])
     
-    temp = request.args.get('countyst')
+    temp = request.args.get('county')
     try:
-        wordlist = temp.split(', ')
-        state = wordlist[0]
-        county = wordlist[1].lower()
+        if(temp.isdigit()):
+            fips = temp
     except:
         pass
 
-    if (county != '') and (state != ''):
+    if (fips != ''):
         sql_query = """
                     SELECT n_facilities, opioid_claims, opioid_prescribing_rate,
                            part_d_prescribers, population,
-                           death_rate_category_median, pred_diff
+                           death_rate_category_median, pred_diff,
+                           county, state
                     FROM rehab_table
-                    WHERE county='{0}' AND st='{1}' AND year=2014;
-                    """.format(county, state)
+                    WHERE fips='{0}' AND year=2014;
+                    """.format(fips)
         df = pd.read_sql_query(sql_query,con)
         if df.shape[0] > 0:
-            county = ' '.join(w.title() for w in county.split(' '))
+            county = ' '.join(w.title() for w in df['county'].values[0].split(' '))
+            state = df['state'].values[0]
             paramdict['n_facilities'] = df['n_facilities'].values[0]
             paramdict['Opioid Claims'] = df['opioid_claims'].values[0]
             paramdict['Opioid Prescribing Rate'] = df['opioid_prescribing_rate'].values[0]
@@ -114,7 +129,7 @@ def get_model_input():
             paramdict['Pred y'] = pred
 
     return render_template("home_map.html",
-        menu_entries=menu_entries,
+        counties=counties, states=states,
         county=county, state=state,
         paramdict=paramdict, rec=rec, filled=all)
 

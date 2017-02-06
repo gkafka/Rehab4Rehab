@@ -22,7 +22,7 @@
       </div>
     </nav>
 
-    <br><br>
+    <br><br><br><br>
 
     <div class="container">
 
@@ -57,7 +57,7 @@
 
           var x = d3.scaleLinear()
               .domain([-20, 20])
-              .rangeRound([600, 860]);
+              .rangeRound([475, 825]);
               
           var color = d3.scaleThreshold()
               .domain(d3.range(-18, 22, 4))
@@ -65,7 +65,7 @@
 
           var g = svg.append("g")
               .attr("class", "key")
-              .attr("transform", "translate(0,40)");
+              .attr("transform", "translate(0,20)");
 
           g.selectAll("rect")
             .data(color.range().map(function(d) {
@@ -75,24 +75,26 @@
                 return d;
               }))
             .enter().append("rect")
-              .attr("height", 8)
+              .attr("height", 12)
               .attr("x", function(d) { return x(d[0]); })
               .attr("width", function(d) { return x(d[1]) - x(d[0]); })
               .attr("fill", function(d) { return color(d[0]); });
 
           g.append("text")
               .attr("class", "caption")
-              .attr("x", x.range()[0])
+              .attr("x", x.range()[0]-78)
               .attr("y", -6)
               .attr("fill", "#000")
               .attr("text-anchor", "start")
               .attr("font-weight", "bold")
+              .style("font-size", "15px")
               .text("Difference between measured and predicted drug poison mortality rates");
 
           g.call(d3.axisBottom(x)
-              .tickSize(13)
+              .tickSize(20)
               .tickFormat(function(x, i) { return i ? x : x; })
               .tickValues(color.domain()))
+              .style("font-size", "15px")
             .select(".domain")
               .remove();
 
@@ -138,82 +140,149 @@
           make_graph ();
         </script>
       </div>
+    </div>
 
-      <div class="starter-template">
-        <h2>Choose a county:</h2>
-        <form action="/home" method="GET">
-          <div class="form-group">
-            <label for="countyst">County: </label>
-            <select name="countyst" id="countyst" type="text" onchange="this.form.submit()">
-              <option value="#">--------------------</option>
-              {% for entry in menu_entries %}
-              <option value="{{ entry }}">{{ entry }}</option>
-              {% endfor %}
-            </select>
-            <p>Type a state abbreviation to quickly find the counties in that state.</p>
-          </div>
-        </form>
-        <p>OR</p>
-        <p>Enter county statistics:</p>
-      </div>
-      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-      <script src="../static/js/bootstrap.min.js"></script>
-
-    </div> <!-- /.container-->
-      <div class = "container">
-
-        <form action="/home" method="GET">
-          <div class="form-group">
-            <label for="population">Population:</label>
-            <input type="text" id="population" name='population' placeholder="e.g. 50000">
-            <br>
-            <label for="n_facility">Number of Rehab Facilities:</label>
-            <input type="text" id="n_facility" name='n_facility' placeholder="e.g. 10">
-            <br>
-            <label for="opioidclaim">Opioid Claims:</label>
-            <input type="text" id="opioidclaim" name='opioidclaim' placeholder="e.g. 50000">
-            <br>
-            <label for="opioid_rate">Opioid Prescribing Rate:</label>
-            <input type="text" id="opioid_rate" name='opioid_rate' placeholder="e.g. 5 (percent)">
-            <br>
-            <label for="prescribers">Number of Part D Prescribers:</label>
-            <input type="text" id="prescribers" name='prescribers' placeholder="e.g. 200">
-            <br>
-            <label for="mortality">Drug Poison Mortality Rate:</label>
-            <input type="text" id="mortality" name='mortality' placeholder="e.g. 3">
-            <br>
-          </div>
-          <div>
-            <button type="submit" class="btn btn-default btn-lg">Model the county</button>
-          </div>
-        </form>
-      </div>
-      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-      <script src="../static/js/bootstrap.min.js"></script>
-
-    </div> <!-- /.container-->
-
-    {% if filled %}
     <div class="container">
-      <div class="starter-template">
-        {% if county %}
-        <h2>{{ county }}, {{ state }}:</h2>
-        {% else %}
-        <h2>Results:</h2>
-        {% endif %}
-        <p class="lead">
-          The actual drug poison mortality rate is {{ paramdict['True y'] }}.<br>
-          The predicted rate is {{ paramdict['Pred y'] }}.<br>
-          {{ rec }}<br>
-          Other statistics:<br>
-          Population: {{ paramdict['Population'] }}<br>
-          Number of rehab facilities: {{ paramdict['n_facilities'] }}<br>
-          Number of opioid claims: {{ paramdict['Opioid Claims'] }}<br>
-          Percent of all claims relating to opioids: {{ paramdict['Opioid Prescribing Rate'] }}<br>
-          Number of Medicare Part D Prescribers: {{ paramdict['Part D Prescribers'] }}<br>
-      </div>
-      {% endif %}
+      <div class="row">
+        <div class="col-md-5">
+          <div class="starter-template">
+            <h2>Choose a county:</h2>
 
+            <form  action="/home" method="GET">
+              <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+              <select class="selectpicker" name="state" id="state">
+                <option value="0" selected disabled>State</option>
+                {% for st in states %}
+                <option value="{{ st[0] }}" data-value="{{ st[0] }}"> {{ st[1] }}</option>
+                {% endfor %}
+              </select>
+
+              <select class="selectpicker hidden" name="county" id="county">
+                <option value="0" selected disabled>County</option>
+                {% for co in counties %}
+                <option value="{{ co[1] }}" data-value="{{ co[0] }}"> {{ co[2] }}</option>
+                {% endfor %}
+              </select>
+              <div>
+                <button id="submit2" type="submit" class="btn btn-default btn-lg" disabled>Model this county</button>
+              </div>
+          
+              <script type="text/javascript">
+                $("#state").change(function() {
+                  if ($(this).data('options') == undefined) {
+                      $(this).data('options', $('#county option').clone());
+                  }
+                  var id = $(this).val();
+                  var options = $(this).data('options').filter('[data-value=' + id + ']');
+                  $('#county').html(options);
+                });
+              </script>
+              <script>
+                $("#state").change(function() {
+                  if ($(this).val() != "0") {
+                    $("#county").removeClass('hidden');
+                  } else {
+                    $("#county").addClass('hidden');
+                  }
+                });
+              </script>
+              <script>
+                $("#state").change(function() {
+                  validate();
+                  // In case of validating specific fields
+                  $('#state, #county').change(validate);
+                });
+                function validate(e){
+                  if ( $('#state').val().length > 1  &&  $('#county').val().length > 1 )
+                  {
+                    $('#submit2').prop('disabled', false);
+                  } else {
+                    $('#submit2').prop('disabled', true);
+                  }
+                }
+              </script>
+            </form>
+            <br>
+            <p>OR</p>
+            <p>Enter county statistics:</p>
+          </div>
+          <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+          <script src="../static/js/bootstrap.min.js"></script>
+
+          <form action="/home" method="GET">
+            <div class="form-group">
+              {% if filled %}
+              <label for="population">Population:</label>
+              <input type="text" id="population" name='population' value={{ paramdict['Population'] }}>
+              <br>
+              <label for="n_facility">Number of Rehab Facilities:</label>
+              <input type="text" id="n_facility" name='n_facility' value={{ paramdict['n_facilities'] }}>
+              <br>
+              <label for="opioidclaim">Opioid Claims:</label>
+              <input type="text" id="opioidclaim" name='opioidclaim' value={{ paramdict['Opioid Claims'] }}>
+              <br>
+              <label for="opioid_rate">Opioid Prescribing Rate:</label>
+              <input type="text" id="opioid_rate" name='opioid_rate' value={{ paramdict['Opioid Prescribing Rate'] }}>
+              <br>
+              <label for="prescribers">Number of Part D Prescribers:</label>
+              <input type="text" id="prescribers" name='prescribers' value={{ paramdict['Part D Prescribers'] }}>
+              <br>
+              <label for="mortality">Drug Poison Mortality Rate:</label>
+              <input type="text" id="mortality" name='mortality' value={{ paramdict['True y'] }}>
+              <br>
+              {% else %}
+              <label for="population">Population:</label>
+              <input type="text" id="population" name='population' placeholder="e.g. 50000">
+              <br>
+              <label for="n_facility">Number of Rehab Facilities:</label>
+              <input type="text" id="n_facility" name='n_facility' placeholder="e.g. 10">
+              <br>
+              <label for="opioidclaim">Opioid Claims:</label>
+              <input type="text" id="opioidclaim" name='opioidclaim' placeholder="e.g. 50000">
+              <br>
+              <label for="opioid_rate">Opioid Prescribing Rate:</label>
+              <input type="text" id="opioid_rate" name='opioid_rate' placeholder="e.g. 5 (percent)">
+              <br>
+              <label for="prescribers">Number of Part D Prescribers:</label>
+              <input type="text" id="prescribers" name='prescribers' placeholder="e.g. 200">
+              <br>
+              <label for="mortality">Drug Poison Mortality Rate:</label>
+              <input type="text" id="mortality" name='mortality' placeholder="e.g. 3">
+              <br>
+              {% endif %}
+            </div>
+            <div>
+              <button type="submit" class="btn btn-default btn-lg">Model the county</button>
+            </div>
+          </form>
+          <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+          <script src="../static/js/bootstrap.min.js"></script>
+        </div><!-- /.col-md-5 -->
+
+        <div class="col-md-5">
+        {% if filled %}
+          <div class="starter-template">
+            {% if county %}
+            <h2>{{ county }}, {{ state }}:</h2>
+            {% else %}
+            <h2>Results:</h2>
+            {% endif %}
+            <p class="lead">
+              The actual drug poison mortality rate is {{ paramdict['True y'] }}.<br>
+              The predicted rate is {{ paramdict['Pred y'] }}.<br>
+              {{ rec }}<br>
+              Other statistics:<br>
+              Population: {{ paramdict['Population'] }}<br>
+              Number of rehab facilities: {{ paramdict['n_facilities'] }}<br>
+              Number of opioid claims: {{ paramdict['Opioid Claims'] }}<br>
+              Percent of all claims relating to opioids: {{ paramdict['Opioid Prescribing Rate'] }}<br>
+              Number of Medicare Part D Prescribers: {{ paramdict['Part D Prescribers'] }}<br>
+            </p>
+          </div>
+        {% endif %}
+        </div><!-- /.col-md-5 -->
+
+      </div><!-- /.row -->
     </div><!-- /.container -->
 
 {% endblock %}
