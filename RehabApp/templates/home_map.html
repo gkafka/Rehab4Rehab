@@ -173,7 +173,7 @@
                 {% endfor %}
               </select>
               <div>
-                <button id="submit2" type="submit" class="btn btn-default btn-lg" disabled>Model this county</button>
+                <button id="submit2" type="submit" class="btn btn-default btn-lg" disabled>Display this county</button>
               </div>
           
               <script type="text/javascript">
@@ -213,9 +213,9 @@
             <br>
             <p>OR</p>
             <h3>Enter county statistics:</h3>
+            <p>
+              The opioid prescribing rate should be entered as a percentage from 0 to 100 without the percent symbol, and the mortality rate as a number per 100,000 people. None of the other fields are normalized or have peculiar units.
           </div>
-          <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-          <script src="../static/js/bootstrap.min.js"></script>
 
           <form action="/home" method="GET">
             <div class="form-group">
@@ -249,22 +249,20 @@
               <input type="text" id="opioidclaim" name='opioidclaim' placeholder="e.g. 50000">
               <br>
               <label for="opioid_rate">Opioid Prescribing Rate:</label>
-              <input type="text" id="opioid_rate" name='opioid_rate' placeholder="e.g. 5 (percent)">
+              <input type="text" id="opioid_rate" name='opioid_rate' placeholder="e.g. 5.25 (percent)">
               <br>
               <label for="prescribers">Number of Part D Prescribers:</label>
               <input type="text" id="prescribers" name='prescribers' placeholder="e.g. 200">
               <br>
               <label for="mortality">Drug Poison Mortality Rate:</label>
-              <input type="text" id="mortality" name='mortality' placeholder="e.g. 3">
+              <input type="text" id="mortality" name='mortality' placeholder="e.g. 3 (per 100k people)">
               <br>
               {% endif %}
             </div>
             <div>
-              <button type="submit" class="btn btn-default btn-lg">Model the county</button>
+              <button type="submit" class="btn btn-default btn-lg">Model this county</button>
             </div>
           </form>
-          <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-          <script src="../static/js/bootstrap.min.js"></script>
         </div><!-- /.col-md-5 -->
 
         <div class="col-md-5">
