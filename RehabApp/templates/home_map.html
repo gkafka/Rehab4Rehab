@@ -22,6 +22,17 @@
       </div>
     </nav>
 
+    <div class="container">
+      <div class="starter-template">
+        <div class="col-md-10">
+          <h2>Counties with the greatest need for a new drug rehab facility</h2>
+          <p>
+            The map below displays the difference between the measured (2014) and predicted drug poison mortality rates. Counties with a large positive difference have a measured rate greater than predicted and are shown in red. Mouse over a county to see a brief summary, or choose a county from the menus below the map for a full summary. The input fields allow for parameter manipulation to see the effect on the predicted rate.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <div class="starter-template">
 
       <style>
@@ -144,7 +155,7 @@
       <div class="row">
         <div class="col-md-5">
           <div class="starter-template">
-            <h2>Choose a county:</h2>
+            <h3>Choose a county:</h3>
 
             <form  action="/home" method="GET">
               <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
@@ -201,7 +212,7 @@
             </form>
             <br>
             <p>OR</p>
-            <p>Enter county statistics:</p>
+            <h3>Enter county statistics:</h3>
           </div>
           <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
           <script src="../static/js/bootstrap.min.js"></script>
@@ -260,9 +271,9 @@
         {% if filled %}
           <div class="starter-template">
             {% if county %}
-            <h2>{{ county }}, {{ state }}:</h2>
+            <h3>{{ county }}, {{ state }}:</h3>
             {% else %}
-            <h2>Results:</h2>
+            <h3>Results:</h3>
             {% endif %}
             <p class="lead">
               The actual drug poison mortality rate is {{ paramdict['True y'] }}.<br>
