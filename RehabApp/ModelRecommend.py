@@ -14,7 +14,7 @@ def ModelRecommend(paramdict, y):
     if y-p[0] < -4:
         rec = 'This county has a mortality rate significantly lower than predicted.\n'
     elif y-p[0] > 4:
-        rec = 'PEOPLE ARE DYING TOO MUCH.'
+        rec = 'The mortality rate is significantly higher than predicted in this county.\nIt would be a good candidate for a new drug rehabilitation facility.\n'
     else:
         rec = 'This county has a mortality rate in line with the prediction.\n'
 
